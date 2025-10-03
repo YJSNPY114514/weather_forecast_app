@@ -1,0 +1,7 @@
+body { font-family: system-ui, sans-serif; margin: 16px; }
+    header { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .today { border: 2px solid #ff7a00; background: #fff7f0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 16px; }
+    .card { padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: #fff; }
+    .holiday { color: #b80000; font-weight: bold; }
+    .muted { color: #666; font-size: 12px; }
