@@ -7,23 +7,25 @@
   <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
-  <header>
-    <h1>天気予報（7日）</h1>
-    <label>
-      地域:
-      <select id="city">
-        <option value="35.6762,139.6503">東京</option>
-        <option value="34.6937,135.5023">大阪</option>
-        <option value="43.0621,141.3544">札幌</option>
-        <option value="35.0116,135.7681">京都</option>
-        <option value="33.5904,130.4017">福岡</option>
-      </select>
-    </label>
-    <button id="load">取得</button>
-    <span id="fortune" class="muted"></span>
-  </header>
+  <div class="container">
+    <header>
+      <h1>天気予報（7日）</h1>
+      <label>
+        地域:
+        <select id="city">
+          <option value="35.6762,139.6503">東京</option>
+          <option value="34.6937,135.5023">大阪</option>
+          <option value="43.0621,141.3544">札幌</option>
+          <option value="35.0116,135.7681">京都</option>
+          <option value="33.5904,130.4017">福岡</option>
+        </select>
+      </label>
+      <button id="load">取得</button>
+      <span id="fortune" class="muted"></span>
+    </header>
 
-  <div id="grid" class="grid"></div>
+    <div id="grid" class="grid"></div>
+  </div>
 <script src="static/main.js"></script>
 </body>
 </html>

@@ -1,7 +1,197 @@
-body { font-family: system-ui, sans-serif; margin: 16px; }
-    header { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-    .today { border: 2px solid #ff7a00; background: #fff7f0; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 16px; }
-    .card { padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: #fff; }
-    .holiday { color: #b80000; font-weight: bold; }
-    .muted { color: #666; font-size: 12px; }
+/* 全体の背景 */
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  padding: 16px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-attachment: fixed;
+}
+
+/* グラスモーフィズム効果のコンテナ */
+.container {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 24px;
+  margin: 0 auto;
+  max-width: 1200px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* ヘッダーの背景 */
+header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(5px);
+  padding: 16px 20px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  margin: 0;
+}
+
+/* カードグリッド */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+/* 基本カード */
+.card {
+  padding: 16px;
+  border: none;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  animation: fadeInUp 0.6s ease forwards;
+  animation-delay: calc(var(--index) * 0.1s);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* 今日のカード（特別デザイン） */
+.today {
+  background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+  color: white;
+  border: 2px solid #ff4757;
+  box-shadow: 0 8px 24px rgba(255, 71, 87, 0.4);
+  transform: scale(1.05);
+  position: relative;
+  animation: pulse 2s infinite;
+}
+
+.today::before {
+  content: "✨ 今日";
+  position: absolute;
+  top: -8px;
+  left: 16px;
+  background: #ff4757;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.today .weather-info {
+  font-weight: bold;
+  font-size: 16px;
+  color: white;
+}
+
+/* 天気に応じた背景グラデーション */
+body.sunny {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #4facfe 100%);
+}
+
+body.rainy {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #89c9ff 100%);
+}
+
+body.cloudy {
+  background: linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%);
+}
+
+body.snowy {
+  background: linear-gradient(135deg, #e6f3ff 0%, #b8d4ff 50%, #8cc8ff 100%);
+}
+
+/* フォーム要素のデザイン */
+select {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 8px 12px;
+  backdrop-filter: blur(5px);
+  color: #333;
+  font-weight: 500;
+}
+
+/* ボタン */
+button {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  border-radius: 12px;
+  padding: 10px 20px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* アニメーション効果 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 8px 24px rgba(255, 71, 87, 0.4); }
+  50% { box-shadow: 0 12px 32px rgba(255, 71, 87, 0.6); }
+  100% { box-shadow: 0 8px 24px rgba(255, 71, 87, 0.4); }
+}
+
+.holiday { 
+  color: #b80000; 
+  font-weight: bold; 
+}
+
+.muted { 
+  color: rgba(255, 255, 255, 0.8); 
+  font-size: 12px; 
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+  .container {
+    margin: 8px;
+    padding: 16px;
+    border-radius: 16px;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+}

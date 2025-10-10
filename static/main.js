@@ -40,6 +40,20 @@ const WMO = {
     return await res.json();
   }
 
+  // 今日の天気に応じて背景クラスを変更
+  function updateBackgroundTheme(weatherCode) {
+    document.body.className = '';
+    if ([0, 1, 2].includes(weatherCode)) {
+      document.body.classList.add('sunny');
+    } else if ([61, 63, 65, 80, 81, 82, 95, 96, 99].includes(weatherCode)) {
+      document.body.classList.add('rainy');
+    } else if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) {
+      document.body.classList.add('snowy');
+    } else {
+      document.body.classList.add('cloudy');
+    }
+  }
+
   function draw(data, holidayMap) {
     const grid = document.getElementById("grid");
     grid.innerHTML = "";
@@ -57,16 +71,24 @@ const WMO = {
 
       const card = document.createElement("div");
       card.className = "card" + (isToday ? " today" : "");
+      card.style.setProperty('--index', i);
 
       const title = document.createElement("div");
       title.innerHTML = `${date}${holidayName ? ` <span class="holiday">（${holidayName}）</span>` : ""}`;
       card.appendChild(title);
 
       const weather = document.createElement("div");
+      weather.className = isToday ? "weather-info" : "";
       weather.textContent = `${WMO[wcode] ?? "不明"} / 最高 ${tmax}℃ 最低 ${tmin}℃ / 湿度 ${rh}%`;
       card.appendChild(weather);
 
       if (isToday) {
+        const todayLabel = document.createElement("div");
+        todayLabel.className = "today-label";
+        todayLabel.textContent = "📅 今日";
+        todayLabel.style.cssText = "font-weight: bold; color: #ff4444; margin-bottom: 4px;";
+        card.insertBefore(todayLabel, weather);
+
         const fortune = document.createElement("div");
         fortune.className = "muted";
         fortune.textContent = `今日の運勢: ${pickFortune()}`;
@@ -74,6 +96,10 @@ const WMO = {
       }
 
       grid.appendChild(card);
+    }
+    // 今日の天気コードで背景テーマを更新
+    if (d.time[0] === todayStr) {
+      updateBackgroundTheme(d.weathercode[0]);
     }
   }
 
