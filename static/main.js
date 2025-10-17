@@ -12,6 +12,34 @@ const WMO = {
     95: "雷雨", 96: "雷雨（雹）", 99: "激しい雷雨（雹）"
   };
 
+  // WMOコードを5分類（晴れ/曇り/雨/雷/雪）に変換
+  function getCategoryFromWmo(code) {
+    if ([0, 1, 2].includes(code)) return "晴れ";
+    if ([3, 45, 48].includes(code)) return "曇り";
+    if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "雨";
+    if ([95, 96, 99].includes(code)) return "雷";
+    if ([71, 73, 75, 77, 85, 86].includes(code)) return "雪";
+    return undefined;
+  }
+
+  // 分類に応じてアイコン画像のパスを返す
+  function getIconSrcByCategory(category) {
+    switch (category) {
+      case "晴れ":
+        return "static/img/tenki_mark01_hare.png";
+      case "曇り":
+        return "static/img/tenki_mark05_kumori.png";
+      case "雨":
+        return "static/img/tenki_mark02_ame.png";
+      case "雷":
+        return "static/img/tenki_mark07_kaminari.png";
+      case "雪":
+        return "static/img/tenki_mark08_yuki.png";
+      default:
+        return undefined;
+    }
+  }
+
   function formatDate(d) {
     const dt = new Date(d);
     const y = dt.getFullYear();
@@ -76,6 +104,17 @@ const WMO = {
       const title = document.createElement("div");
       title.innerHTML = `${date}${holidayName ? ` <span class="holiday">（${holidayName}）</span>` : ""}`;
       card.appendChild(title);
+
+      // 天気アイコン（分類→画像）
+      const category = getCategoryFromWmo(wcode);
+      const iconSrc = category ? getIconSrcByCategory(category) : undefined;
+      if (iconSrc) {
+        const icon = document.createElement("img");
+        icon.className = "wx-icon";
+        icon.alt = category;
+        icon.src = iconSrc;
+        card.appendChild(icon);
+      }
 
       const weather = document.createElement("div");
       weather.className = isToday ? "weather-info" : "";
