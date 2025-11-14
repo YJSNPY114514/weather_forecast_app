@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>都道府県名 取得テスト（test.js 利用）</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
+            margin: 20px;
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        input,
+        button {
+            height: 36px;
+            padding: 0 10px;
+        }
+
+        #result {
+            margin-top: 14px;
+            padding: 10px;
+            background: #f6f7fb;
+            border: 1px solid #e5e7eb;
+        }
+
+        .error {
+            color: #b91c1c;
+            font-weight: 600;
+        }
+
+        .muted {
+            color: #6b7280;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>都道府県名 取得テスト</h1>
+    <p class="muted">地理院のリバースジオコーディング → <code>test.js</code> の関数で都道府県コードを取り出し → 名称に変換して表示します。</p>
+
+    <div class="row">
+        <input id="lat" type="number" step="any" placeholder="緯度 (例: 35.681236)" style="width: 220px">
+        <input id="lon" type="number" step="any" placeholder="経度 (例: 139.767125)" style="width: 220px">
+        <button id="btnRun">取得</button>
+        <button id="btnGeo">現在地から取得</button>
+    </div>
+
+    <div id="status" class="muted"></div>
+    <div id="result"></div>
+
+    <!-- muni.js は GSI.MUNI_ARRAY を使うため、先に GSI を用意してから読み込みます -->
+    <script>window.GSI = window.GSI || {};</script>
+    <script src="./muni.js"></script>
+
+    <script type="module">
+        // 都道府県コード → 都道府県名のマップ（01〜47）。test.js はコードまでなので、ここで名称に変換します。
+        const PREF_CODE_TO_NAME = {
+            "1": "北海道", "2": "青森県", "3": "岩手県", "4": "宮城県", "5": "秋田県", "6": "山形県", "7": "福島県",
+            "8": "茨城県", "9": "栃木県", "10": "群馬県", "11": "埼玉県", "12": "千葉県", "13": "東京都", "14": "神奈川県",
+            "15": "新潟県", "16": "富山県", "17": "石川県", "18": "福井県", "19": "山梨県", "20": "長野県",
+            "21": "岐阜県", "22": "静岡県", "23": "愛知県", "24": "三重県",
+            "25": "滋賀県", "26": "京都府", "27": "大阪府", "28": "兵庫県", "29": "奈良県", "30": "和歌山県",
+            "31": "鳥取県", "32": "島根県", "33": "岡山県", "34": "広島県", "35": "山口県",
+            "36": "徳島県", "37": "香川県", "38": "愛媛県", "39": "高知県",
+            "40": "福岡県", "41": "佐賀県", "42": "長崎県", "43": "熊本県", "44": "大分県", "45": "宮崎県", "46": "鹿児島県", "47": "沖縄県"
+        };
+
+        const statusEl = document.getElementById('status');
+        const resultEl = document.getElementById('result');
+        const latEl = document.getElementById('lat');
+        const lonEl = document.getElementById('lon');
+
+        function setStatus(msg) { statusEl.textContent = msg || ''; }
+        function setError(msg) { statusEl.innerHTML = `<span class="error">${msg}</span>`; }
+
+        async function loadAndGetService() {
+            try {
+                const mod = await import('./test.js');
+                if (!mod || typeof mod.useGeolocationService !== 'function') {
+                    throw new Error('test.js のエクスポートを確認できませんでした');
+                }
+                return mod.useGeolocationService();
+            } catch (e) {
+                throw new Error('test.js の読み込みに失敗しました。ビルドや型記述の有無を確認してください。');
+            }
+        }
+
+        function showResult({ lat, lon, prefectureCode, prefectureName, muniCd, municipalityName }) {
+            resultEl.innerHTML = `
+        <div>入力: 緯度 ${lat}, 経度 ${lon}</div>
+        <div>muniCd: <code>${muniCd ?? '-'}</code></div>
+        <div>都道府県コード: <strong>${prefectureCode ?? '-'}</strong></div>
+        <div>都道府県名: <strong>${prefectureName ?? '-'}</strong></div>
+        <div>市区町村名: <strong>${municipalityName ?? '-'}</strong></div>
+      `;
+        }
+
+        async function run(lat, lon) {
+            setStatus('取得中…');
+            resultEl.textContent = '';
+            try {
+                // test.js のサービスを取得
+                const svc = await loadAndGetService();
+
+                // test.js の内部APIを直接使って muniCd も取得（表示用）
+                // ESM のクロージャ外からは直接触れないため、prefectureCode は公開関数で取得し、
+                // muniCd は別途 API 直叩きで取得して表示する
+                const muniRes = await fetch(`https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=${lat}&lon=${lon}`);
+                let muniCd = undefined;
+                if (muniRes.ok) {
+                    const json = await muniRes.json();
+                    muniCd = json?.results?.muniCd;
+                }
+
+                // 公開関数で都道府県コードと市町村名を取得
+                const prefectureCode = await svc.getPrefectureCodeFromLatLon({ lat, lon });
+                const municipalityName = await svc.getMunicipalityFromLatLon({ lat, lon });
+                const prefectureName = prefectureCode ? PREF_CODE_TO_NAME[String(Number(prefectureCode))] : undefined;
+
+                showResult({ lat, lon, prefectureCode, prefectureName, muniCd, municipalityName });
+                setStatus('完了');
+            } catch (e) {
+                console.error(e);
+                setError(e?.message || '取得に失敗しました');
+            }
+        }
+
+        document.getElementById('btnRun').addEventListener('click', () => {
+            const lat = parseFloat(latEl.value);
+            const lon = parseFloat(lonEl.value);
+            if (Number.isNaN(lat) || Number.isNaN(lon)) { setError('緯度と経度を入力してください'); return; }
+            run(lat, lon);
+        });
+
+        document.getElementById('btnGeo').addEventListener('click', () => {
+            if (!navigator.geolocation) { setError('このブラウザは位置情報に対応していません'); return; }
+            setStatus('現在地を取得中…');
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const { latitude, longitude } = pos.coords;
+                    latEl.value = String(latitude);
+                    lonEl.value = String(longitude);
+                    run(latitude, longitude);
+                },
+                (err) => {
+                    console.error(err);
+                    setError('現在地の取得に失敗しました');
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        });
+
+        // 東京駅デフォルト
+        window.addEventListener('load', () => {
+            latEl.value = '35.681236';
+            lonEl.value = '139.767125';
+        });
+    </script>
+</body>
+
+</html>

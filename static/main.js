@@ -158,5 +158,39 @@ const WMO = {
     document.getElementById("fortune").textContent = `地域: ${document.getElementById("city").selectedOptions[0].text}`;
   }
 
+  async function loadFromCurrentLocation() {
+    if (!navigator.geolocation) {
+      alert('このブラウザは位置情報に対応していません');
+      return;
+    }
+    
+    const fortuneEl = document.getElementById("fortune");
+    fortuneEl.textContent = '現在地を取得中…';
+    
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const year = new Date().getFullYear();
+          const [forecast, holidayMap] = await Promise.all([
+            fetchForecast(latitude, longitude),
+            fetchHolidayMap(year)
+          ]);
+          draw(forecast, holidayMap);
+          fortuneEl.textContent = `地域: 現在地 (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+        } catch (error) {
+          console.error(error);
+          fortuneEl.textContent = '天気の取得に失敗しました';
+        }
+      },
+      (err) => {
+        console.error(err);
+        fortuneEl.textContent = '現在地の取得に失敗しました';
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
   document.getElementById("load").addEventListener("click", load);
+  document.getElementById("loadCurrent").addEventListener("click", loadFromCurrentLocation);
   window.addEventListener("DOMContentLoaded", load);
